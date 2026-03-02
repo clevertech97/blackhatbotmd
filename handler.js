@@ -986,17 +986,18 @@ const handleGroupUpdate = async (sock, update) => {
           
           // Create formatted welcome message
           const welcomeMsg = `╭━━〔 𝙼𝙴𝙼𝙱𝙴𝚁•〕━━┈⊷\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName} 👋\n┃Member count: #${groupMetadata.participants.length}\n┃𝚃𝙸𝙼𝙴: ${timeString}⏰\╰━━━━━━━━━━━━━━━━━━━┈⊷\n\n*@${displayName}* Welcome to *${groupName}*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\n${groupDesc}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
-          await sock.sendMessage(groupId, {
-    text: welcomeMsg,
-    mentions: [participant], // jid ya member aliyejoin
-    contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363422524788798@newsletter',
-            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
-        }
-    }
+          await sock.sendMessage(id, { 
+  image: imageBuffer,
+  caption: welcomeMsg,
+  mentions: [participantJid],
+  contextInfo: {
+      forwardingScore: 999,
+      isForwarded: true,
+      forwardedNewsletterMessageInfo: {
+          newsletterJid: '120363422524788798@newsletter',
+          newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+      }
+  }
 });
           // Construct API URL for welcome image
           const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=join&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
@@ -1126,18 +1127,19 @@ const handleGroupUpdate = async (sock, update) => {
           
           // Construct API URL for goodbye image (using leave type)
           const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=leave&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
-          await sock.sendMessage(groupId, {
-    image: { url: apiUrl },
-    caption: goodbyeMsg,
-    mentions: [participant],
-    contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363422524788798@newsletter',
-            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
-        }
+          // Send the goodbye image with caption as forwarded
+await sock.sendMessage(groupId, {
+  image: imageBuffer,   // or use { url: apiUrl } if you prefer direct URL
+  caption: goodbyeMsg,
+  mentions: [participantJid],
+  contextInfo: {
+    forwardingScore: 999,
+    isForwarded: true,
+    forwardedNewsletterMessageInfo: {
+      newsletterJid: '120363422524788798@newsletter',
+      newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
     }
+  }
 });
           // Download the goodbye image
           const imageResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
