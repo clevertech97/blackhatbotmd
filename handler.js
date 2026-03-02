@@ -1128,19 +1128,20 @@ const handleGroupUpdate = async (sock, update) => {
           // Construct API URL for goodbye image (using leave type)
           const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=leave&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
           // Send the goodbye image with caption as forwarded
-await sock.sendMessage(groupId, {
-  image: imageBuffer,   // or use { url: apiUrl } if you prefer direct URL
-  caption: goodbyeMsg,
-  mentions: [participantJid],
-  contextInfo: {
-    forwardingScore: 999,
-    isForwarded: true,
-    forwardedNewsletterMessageInfo: {
-      newsletterJid: '120363422524788798@newsletter',
-      newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+  // Send goodbye as forwarded with thumbnail style
+  await sock.sendMessage(groupId, {
+    image: imageBuffer,
+    caption: goodbyeMsg,
+    mentions: [participantJid],
+    contextInfo: {
+      forwardingScore: 999,
+      isForwarded: true,
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: '120363422524788798@newsletter',
+        newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+      }
     }
-  }
-});
+  });
           // Download the goodbye image
           const imageResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
           const imageBuffer = Buffer.from(imageResponse.data);
