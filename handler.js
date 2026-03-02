@@ -975,6 +975,8 @@ const handleGroupUpdate = async (sock, update) => {
           // Get group name and description
           const groupName = groupMetadata.subject || 'the group';
           const groupDesc = groupMetadata.desc || 'No description';
+          // Define chatId kutoka groupMetadata
+const chatId = groupMetadata.id; // hii ndio JID ya group
           
           // Get current time string
           const now = new Date();
@@ -995,14 +997,14 @@ const handleGroupUpdate = async (sock, update) => {
           const imageBuffer = Buffer.from(imageResponse.data);
           
           // Send the welcome image with formatted caption
-          await sock.sendMessage(id, { 
+          await sock.sendMessage(chatId, { 
             image: imageBuffer,
             caption: welcomeMsg,
             mentions: [participantJid] 
           });
 
         // Kutuma kama forwarded message
-await sock.sendMessage(groupId, {
+await sock.sendMessage(chatId, {
   text: welcomeMsg,
   mentions: [participantJid],
   contextInfo: {
