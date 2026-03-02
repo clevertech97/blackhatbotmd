@@ -975,6 +975,8 @@ const handleGroupUpdate = async (sock, update) => {
           // Get group name and description
           const groupName = groupMetadata.subject || 'the group';
           const groupDesc = groupMetadata.desc || 'No description';
+          // Define chatId kutoka groupMetadata
+const chatId = groupMetadata.id; // hii ndio JID ya group
           
           // Get current time string
           const now = new Date();
@@ -994,14 +996,10 @@ const handleGroupUpdate = async (sock, update) => {
           const imageResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
           const imageBuffer = Buffer.from(imageResponse.data);
           
-          // Send the welcome image with formatted caption
-          await sock.sendMessage(id, { 
-            image: imageBuffer,
-            caption: welcomeMsg,
-            mentions: [participantJid] 
-          });
-          await sock.sendMessage(id, {
-  text: welcomeMsg,
+// Send welcome image as forwarded message with caption
+await sock.sendMessage(chatId, { 
+  image: imageBuffer,
+  caption: welcomeMsg,
   mentions: [participantJid],
   contextInfo: {
     forwardingScore: 999,
@@ -1113,6 +1111,8 @@ const handleGroupUpdate = async (sock, update) => {
           // Get group name and description
           const groupName = groupMetadata.subject || 'the group';
           const groupDesc = groupMetadata.desc || 'No description';
+          // Define chatId kutoka groupMetadata
+const chatId = groupMetadata.id; // hii ndio JID ya group
           
           // Get current time string
           const now = new Date();
@@ -1132,14 +1132,10 @@ const handleGroupUpdate = async (sock, update) => {
           const imageResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
           const imageBuffer = Buffer.from(imageResponse.data);
           
-          // Send the goodbye image with caption
-          await sock.sendMessage(id, { 
-            image: imageBuffer,
-            caption: goodbyeMsg,
-            mentions: [participantJid] 
-          });
-                    await sock.sendMessage(id, {
-  text: welcomeMsg,
+// Send goodbye image as forwarded message with caption
+await sock.sendMessage(chatId, { 
+  image: imageBuffer,
+  caption: goodbyeMsg,
   mentions: [participantJid],
   contextInfo: {
     forwardingScore: 999,
