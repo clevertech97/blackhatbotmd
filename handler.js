@@ -975,8 +975,6 @@ const handleGroupUpdate = async (sock, update) => {
           // Get group name and description
           const groupName = groupMetadata.subject || 'the group';
           const groupDesc = groupMetadata.desc || 'No description';
-          // Define chatId kutoka groupMetadata
-const chatId = groupMetadata.id; // hii ndio JID ya group
           
           // Get current time string
           const now = new Date();
@@ -987,7 +985,7 @@ const chatId = groupMetadata.id; // hii ndio JID ya group
           });
           
           // Create formatted welcome message
-          const welcomeMsg = `╭━━〔 𝙼𝙴𝙼𝙱𝙴𝚁•〕━━┈⊷\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName} 👋\n┃Member count: #${groupMetadata.participants.length}\n┃𝚃𝙸𝙼𝙴: ${timeString}⏰\╰━━━━━━━━━━━━━━━━━━━┈⊷\n\n*@${displayName}* Welcome to *${groupName}*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\n${groupDesc}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
+          const welcomeMsg = `╭╼━≪•𝙽𝙴𝚆 𝙼𝙴𝙼𝙱𝙴𝚁•≫━╾╮\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName} 👋\n┃Member count: #${groupMetadata.participants.length}\n┃𝚃𝙸𝙼𝙴: ${timeString}⏰\n╰━━━━━━━━━━━━━━━╯\n\n*@${displayName}* Welcome to *${groupName}*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\n${groupDesc}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
           
           // Construct API URL for welcome image
           const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=join&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
@@ -997,27 +995,11 @@ const chatId = groupMetadata.id; // hii ndio JID ya group
           const imageBuffer = Buffer.from(imageResponse.data);
           
           // Send the welcome image with formatted caption
-          await sock.sendMessage(chatId, { 
+          await sock.sendMessage(id, { 
             image: imageBuffer,
             caption: welcomeMsg,
             mentions: [participantJid] 
           });
-
-        // Kutuma kama forwarded message
-await sock.sendMessage(chatId, {
-  text: welcomeMsg,
-  mentions: [participantJid],
-  contextInfo: {
-    forwardingScore: 999,
-    isForwarded: true,
-    forwardedNewsletterMessageInfo: {
-      newsletterJid: '120363422524788798@newsletter',
-      newsletterName: config.botName
-    }
-  }
-});
-
-        
         } catch (welcomeError) {
           // Fallback to text message if image generation fails
           console.error('Welcome image error:', welcomeError);
@@ -1119,8 +1101,6 @@ await sock.sendMessage(chatId, {
           // Get group name and description
           const groupName = groupMetadata.subject || 'the group';
           const groupDesc = groupMetadata.desc || 'No description';
-          // Define chatId kutoka groupMetadata
-const chatId = groupMetadata.id; // hii ndio JID ya group
           
           // Get current time string
           const now = new Date();
@@ -1141,27 +1121,11 @@ const chatId = groupMetadata.id; // hii ndio JID ya group
           const imageBuffer = Buffer.from(imageResponse.data);
           
           // Send the goodbye image with caption
-          await sock.sendMessage(chatId, { 
+          await sock.sendMessage(id, { 
             image: imageBuffer,
             caption: goodbyeMsg,
             mentions: [participantJid] 
           });
-
-          // 7️⃣ Pia tuma kama forwarded message
-await sock.sendMessage(chatId, {
-  text: goodbyeMsg,
-  mentions: [participantJid],
-  contextInfo: {
-    forwardingScore: 999, // inaonyesha kama forwarded
-    isForwarded: true,
-    forwardedNewsletterMessageInfo: {
-      newsletterJid: '120363422524788798@newsletter', // badilisha kama unataka
-      newsletterName: config.botName
-    }
-  }
-});
-
-          
         } catch (goodbyeError) {
           // Fallback to simple goodbye message
           console.error('Goodbye error:', goodbyeError);
