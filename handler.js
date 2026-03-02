@@ -969,7 +969,7 @@ const handleGroupUpdate = async (sock, update) => {
             profilePicUrl = await sock.profilePictureUrl(participantJid, 'image');
           } catch (ppError) {
             // If profile picture not available, use default avatar
-            profilePicUrl = 'https://img.pyrocdn.com/dbKUgahg.png';
+            profilePicUrl = 'https://files.catbox.moe/pjthvh.jpg';
           }
           
           // Get group name and description
@@ -1106,7 +1106,7 @@ const handleGroupUpdate = async (sock, update) => {
             profilePicUrl = await sock.profilePictureUrl(participantJid, 'image');
           } catch (ppError) {
             // If profile picture not available, use default avatar
-            profilePicUrl = 'https://img.pyrocdn.com/dbKUgahg.png';
+            profilePicUrl = 'https://files.catbox.moe/pjthvh.jpg';
           }
           
           // Get group name and description
@@ -1126,7 +1126,19 @@ const handleGroupUpdate = async (sock, update) => {
           
           // Construct API URL for goodbye image (using leave type)
           const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=leave&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
-          
+          await sock.sendMessage(groupId, {
+    image: { url: apiUrl },
+    caption: goodbyeMsg,
+    mentions: [participant],
+    contextInfo: {
+        forwardingScore: 999,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363422524788798@newsletter',
+            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+        }
+    }
+});
           // Download the goodbye image
           const imageResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
           const imageBuffer = Buffer.from(imageResponse.data);
@@ -1205,7 +1217,7 @@ const handleAntilink = async (sock, msg, groupMetadata) => {
           await sock.sendMessage(from, { delete: msg.key });
           await sock.groupParticipantsUpdate(from, [sender], 'remove');
           await sock.sendMessage(from, { 
-            text: `🔗 Anti-link triggered. Link removed.`,
+            text: `🔗 _link not allowed_.`,
             mentions: [sender]
           }, { quoted: msg });
         } catch (e) {
@@ -1216,7 +1228,7 @@ const handleAntilink = async (sock, msg, groupMetadata) => {
         try {
           await sock.sendMessage(from, { delete: msg.key });
           await sock.sendMessage(from, { 
-            text: `🔗 Anti-link triggered. Link removed.`,
+            text: `🔗 _link not allowed_.`,
             mentions: [sender]
           }, { quoted: msg });
         } catch (e) {
