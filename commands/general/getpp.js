@@ -44,12 +44,20 @@ module.exports = {
         const response = await axios.get(ppUrl, { responseType: 'arraybuffer', timeout: 20000 });
         const buffer = Buffer.from(response.data);
 
-        // Send as reply
-        await sock.sendMessage(extra.from, {
-          image: buffer,
-          caption: `👤 Profile picture of @${targetUser.split('@')[0]}`,
-          mentions: [targetUser]
-        }, { quoted: msg });
+// Send as forwarded message with thumbnail
+await sock.sendMessage(extra.from, {
+    image: buffer,
+    caption: `👤 Profile picture of @${targetUser.split('@')[0]}`,
+    mentions: [targetUser],
+    contextInfo: {
+        forwardingScore: 999,   // Makes it look forwarded
+        isForwarded: true,      // Marks as forwarded
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363422524788798@newsletter',
+            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+        }
+    }
+}, { quoted: msg }); // optional: reply to original message
 
       } catch (err) {
         if (err.message?.includes('item-not-found') || err.message?.includes('not found')) {
