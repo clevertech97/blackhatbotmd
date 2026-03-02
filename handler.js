@@ -987,9 +987,6 @@ const handleGroupUpdate = async (sock, update) => {
           // Create formatted welcome message
           const welcomeMsg = `╭━━〔 𝙼𝙴𝙼𝙱𝙴𝚁•〕━━┈⊷\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName} 👋\n┃Member count: #${groupMetadata.participants.length}\n┃𝚃𝙸𝙼𝙴: ${timeString}⏰\╰━━━━━━━━━━━━━━━━━━━┈⊷\n\n*@${displayName}* Welcome to *${groupName}*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\n${groupDesc}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
           await sock.sendMessage(id, { 
-  image: imageBuffer,
-  caption: welcomeMsg,
-  mentions: [participantJid],
   contextInfo: {
       forwardingScore: 999,
       isForwarded: true,
@@ -1128,11 +1125,7 @@ const handleGroupUpdate = async (sock, update) => {
           // Construct API URL for goodbye image (using leave type)
           const apiUrl = `https://api.some-random-api.com/welcome/img/7/gaming4?type=leave&textcolor=white&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
           // Send the goodbye image with caption as forwarded
-  // Send goodbye as forwarded with thumbnail style
   await sock.sendMessage(groupId, {
-    image: imageBuffer,
-    caption: goodbyeMsg,
-    mentions: [participantJid],
     contextInfo: {
       forwardingScore: 999,
       isForwarded: true,
