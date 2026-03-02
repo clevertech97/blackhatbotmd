@@ -1119,6 +1119,8 @@ await sock.sendMessage(chatId, {
           // Get group name and description
           const groupName = groupMetadata.subject || 'the group';
           const groupDesc = groupMetadata.desc || 'No description';
+          // Define chatId kutoka groupMetadata
+const chatId = groupMetadata.id; // hii ndio JID ya group
           
           // Get current time string
           const now = new Date();
@@ -1139,14 +1141,14 @@ await sock.sendMessage(chatId, {
           const imageBuffer = Buffer.from(imageResponse.data);
           
           // Send the goodbye image with caption
-          await sock.sendMessage(id, { 
+          await sock.sendMessage(chatId, { 
             image: imageBuffer,
             caption: goodbyeMsg,
             mentions: [participantJid] 
           });
 
           // 7️⃣ Pia tuma kama forwarded message
-await sock.sendMessage(groupId, {
+await sock.sendMessage(chatId, {
   text: goodbyeMsg,
   mentions: [participantJid],
   contextInfo: {
