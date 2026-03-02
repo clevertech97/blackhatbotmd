@@ -1,69 +1,68 @@
 const axios = require('axios');
 
 module.exports = {
-    name: 'getpp',
-    aliases: ['gp', 'getpic'],
-    category: 'general',
-    description: 'Get profile picture of a user (supports numbers with + and spaces)',
-    usage: '.gp (reply, tag, or number)',
-    
-    async execute(sock, msg, args, extra) {
-        try {
-            let targetUser = null;
+  name: 'getpp',
+  aliases: ['gp', 'getpic'],
+  category: 'general',
+  description: 'Get profile picture of a user',
+  usage: '.getpp (reply, tag, or number)',
+  
+  async execute(sock, msg, args, extra) {
+    try {
+      let targetUser = null;
 
-            // 1️⃣ Check if user replied to a message
-            const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-            if (quoted) {
-                targetUser = msg.message.extendedTextMessage.contextInfo.participant;
-            } 
-            // 2️⃣ Check if user is tagged
-            else if (msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length) {
-                targetUser = msg.message.extendedTextMessage.contextInfo.mentionedJid[0];
-            } 
-            // 3️⃣ If typed number (with + and spaces)
-            else if (args.length > 0) {
-                // Remove +, spaces, non-digit characters
-                const num = args.join('').replace(/\D/g,'');
-                targetUser = `${num}@s.whatsapp.net`;
-            } 
-            // 4️⃣ Fallback to sender
-            else {
-                targetUser = extra.sender;
-            }
+      // 1️⃣ If reply, get the sender of the quoted message
+      const quotedMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      if (quotedMessage) {
+        targetUser = msg.message.extendedTextMessage.contextInfo.participant;
+      } 
+      // 2️⃣ If mention, get the first mentioned user
+      else if (msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
+        targetUser = msg.message.extendedTextMessage.contextInfo.mentionedJid[0];
+      } 
+      // 3️⃣ If a number is passed as arguments
+      else if (args.length > 0) {
+        // join all args and remove all non-digit characters
+        const number = args.join('').replace(/\D/g, '');
+        if (number) targetUser = `${number}@s.whatsapp.net`;
+      } 
+      // 4️⃣ Default: sender
+      else {
+        targetUser = extra.sender;
+      }
 
-            if (!targetUser) return extra.reply('❌ Could not identify target user.');
+      if (!targetUser) {
+        return extra.reply('❌ Could not identify the target user. Reply, tag, or provide a number.');
+      }
 
-            // 5️⃣ Fetch profile picture
-            let ppUrl = '';
-            try {
-                ppUrl = await sock.profilePictureUrl(targetUser, 'image');
-            } catch {
-                // Fallback image
-                ppUrl = 'https://files.catbox.moe/pjthvh.jpg';
-            }
+      try {
+        // Fetch profile picture URL
+        const ppUrl = await sock.profilePictureUrl(targetUser, 'image');
+        if (!ppUrl) return extra.reply('❌ Profile picture not found.');
 
-            // 6️⃣ Download image
-            const response = await axios.get(ppUrl, { responseType: 'arraybuffer' });
-            const buffer = Buffer.from(response.data);
+        // Download picture
+        const response = await axios.get(ppUrl, { responseType: 'arraybuffer', timeout: 20000 });
+        const buffer = Buffer.from(response.data);
 
-            // 7️⃣ Send forwarded style with thumbnail
-            await sock.sendMessage(extra.from, {
-                image: buffer,
-                caption: `👤 Profile picture of @${targetUser.split('@')[0]}`,
-                mentions: [targetUser],
-                contextInfo: {
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363422524788798@newsletter',
-                        newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
-                    }
-                }
-            }, { quoted: msg });
+        // Send as reply
+        await sock.sendMessage(extra.from, {
+          image: buffer,
+          caption: `👤 Profile picture of @${targetUser.split('@')[0]}`,
+          mentions: [targetUser]
+        }, { quoted: msg });
 
-        } catch (error) {
-            console.error('GetPP Error:', error);
-            await extra.reply('❌ Profile picture not found or invalid number.');
+      } catch (err) {
+        if (err.message?.includes('item-not-found') || err.message?.includes('not found')) {
+          return extra.reply('❌ Profile picture not found.');
+        } else if (err.message?.includes('forbidden') || err.message?.includes('unauthorized')) {
+          return extra.reply('❌ Profile picture is private or unavailable.');
+        } else {
+          return extra.reply('❌ Could not fetch profile picture.');
         }
+      }
+
+    } catch (error) {
+      return extra.reply('❌ Could not fetch profile picture due to an error.');
     }
+  }
 };
