@@ -1,7 +1,6 @@
 /**
- * GitHub Command - Show bot GitHub repository and stats
+ * GitHub Command - Interactive real-time stats + clickable buttons + forwarded
  */
-
 const axios = require('axios');
 const config = require('../../config');
 
@@ -9,79 +8,114 @@ module.exports = {
     name: 'github',
     aliases: ['repo', 'git', 'source', 'sc', 'script'],
     category: 'general',
-    description: 'Show bot GitHub repository and statistics',
-    usage: '.github',
+    description: 'Show bot GitHub repository with interactive stats and clickable buttons',
+    usage: '.github [stars|forks|watchers|clone]',
     ownerOnly: false,
 
     async execute(sock, msg, args, extra) {
         try {
             const chatId = extra.from;
-            
-            // GitHub repository URL
             const repoUrl = 'https://github.com/clevertech97/blackhatbotmd';
             const apiUrl = 'https://api.github.com/repos/clevertech97/blackhatbotmd';
-            
-            // Send loading message
+
             const loadingMsg = await extra.reply('🔍 Fetching GitHub repository information...');
-            
+
             try {
-                // Fetch repository data from GitHub API
-                const response = await axios.get(apiUrl, {
-                    headers: {
-                        'User-Agent': 'blackhatbotmd'
+                const response = await axios.get(apiUrl, { headers: { 'User-Agent': 'blackhatbotmd' } });
+                const repo = response.data;
+
+                // Determine what to show based on args
+                let caption = '';
+                switch ((args[0] || '').toLowerCase()) {
+                    case 'stars':
+                        caption = `⭐ Stars: ${repo.stargazers_count.toLocaleString()}`;
+                        break;
+                    case 'forks':
+                        caption = `🍴 Forks: ${repo.forks_count.toLocaleString()}`;
+                        break;
+                    case 'watchers':
+                        caption = `👁️ Watchers: ${repo.watchers_count.toLocaleString()}`;
+                        break;
+                    case 'clone':
+                        caption = `📥 Clone URL:\n\`git clone ${repo.clone_url}\``;
+                        break;
+                    default:
+                        caption = `╭━━〔 *GitHub Repository* 〕━━┈⊷
+
+🤖 *Bot Name:* ${config.botName}
+🔗 *Repository:* ${repo.name}
+👨‍💻 *Owner:* ${repo.owner.login}
+📄 *Description:* ${repo.description || 'No description provided'}
+🌐 *URL:* ${repo.html_url}
+
+📊 *Repository Statistics*
+⭐ Stars: ${repo.stargazers_count.toLocaleString()}
+🍴 Forks: ${repo.forks_count.toLocaleString()}
+👁️ Watchers: ${repo.watchers_count.toLocaleString()}
+📦 Size: ${(repo.size / 1024).toFixed(2)} MB
+
+╰━━━━━━━━━━━━━━━━━━━┈⊷
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
+                        break;
+                }
+
+                // Clickable URL buttons
+                const templateButtons = [
+                    { urlButton: { displayText: '⭐ Star', url: `${repo.html_url}/stargazers` } },
+                    { urlButton: { displayText: '🍴 Fork', url: `${repo.html_url}/fork` } },
+                    { urlButton: { displayText: '📥 Clone', url: `https://github.com/clevertech97/blackhatbotmd.git` } }
+                ];
+
+                // Send forwarded message with thumbnail, caption, buttons
+                await sock.sendMessage(chatId, {
+                    image: { url: repo.owner.avatar_url },
+                    caption: caption,
+                    templateButtons: templateButtons,
+                    headerType: 4,
+                    mentions: [extra.sender],
+                    contextInfo: {
+                        forwardingScore: 999,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363422524788798@newsletter',
+                            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+                        }
                     }
                 });
-                
-                const repo = response.data;
-                
-                // Format the response with proper styling
-                let message = `╭━━『 *GitHub Repository* 』━━╮\n\n`;
-                message += `🤖 *Bot Name:* ${config.botName}\n`;
-                message += `🔗 *Repository:* ${repo.name}\n`;
-                message += `👨‍💻 *Owner:* ${repo.owner.login}\n`;
-                message += `📄 *Description:* ${repo.description || 'No description provided'}\n`;
-                message += `🌐 *URL:* ${repo.html_url}\n\n`;
-                
-                message += `📊 *Repository Statistics*\n`;
-                message += `⭐ *Stars:* ${repo.stargazers_count.toLocaleString()}\n`;
-                message += `🍴 *Forks:* ${repo.forks_count.toLocaleString()}\n`;
-                message += `👁️ *Watchers:* ${repo.watchers_count.toLocaleString()}\n`;
-                message += `📦 *Size:* ${(repo.size / 1024).toFixed(2)} MB\n\n`;
-                
-                message += `🔗 *Quick Links*\n`;
-                message += `⭐ Star: ${repo.html_url}/stargazers\n`;
-                message += `🍴 Fork: ${repo.html_url}/fork\n`;
-                message += `📥 Clone: git clone ${repo.clone_url}\n\n`;
-                
-                message += `╰━━━━━━━━━━━━━━━╯\n\n`;
-                message += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
-                
-                // Edit the loading message with the actual data
-                await sock.sendMessage(chatId, {
-                    text: message,
-                    edit: loadingMsg.key
-                });
-                
+
             } catch (apiError) {
-                // Fallback message if API fails
                 console.error('GitHub API Error:', apiError.message);
-                
-                let fallbackMessage = `╭━━『 *GitHub Repository* 』━━╮\n\n`;
-                fallbackMessage += `🤖 *Bot Name:* ${config.botName}\n`;
-                fallbackMessage += `🔗 *Repository:* 𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝\n`;
-                fallbackMessage += `👨‍💻 *Owner:* clevertech97\n`;
-                fallbackMessage += `🌐 *URL:* ${repoUrl}\n\n`;
-                fallbackMessage += `⚠️ *Note:* Unable to fetch real-time statistics.\n`;
-                fallbackMessage += `Please visit the repository directly for latest stats.\n\n`;
-                fallbackMessage += `╰━━━━━━━━━━━━━━━╯\n\n`;
-                fallbackMessage += `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
-                
+
+                const fallbackCaption = `╭━━〔 *GitHub Repository* 〕━━┈⊷
+
+🤖 *Bot Name:* ${config.botName}
+🔗 *Repository:* 𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝
+👨‍💻 *Owner:* clevertech97
+🌐 URL: ${repoUrl}
+
+⚠️ Unable to fetch real-time stats. Please visit repository directly.
+
+╰━━━━━━━━━━━━━━━━━━━┈⊷
+> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}*`;
+
                 await sock.sendMessage(chatId, {
-                    text: fallbackMessage,
-                    edit: loadingMsg.key
+                    image: { url: 'https://i.ibb.co/2k7V8dM/default-avatar.png' },
+                    caption: fallbackCaption,
+                    templateButtons: [
+                        { urlButton: { displayText: '🌐 Open Repo', url: repoUrl } }
+                    ],
+                    headerType: 4,
+                    contextInfo: {
+                        forwardingScore: 999,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363422524788798@newsletter',
+                            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+                        }
+                    }
                 });
             }
-            
+
         } catch (error) {
             console.error('GitHub command error:', error);
             await extra.reply(`❌ Error: ${error.message}`);
