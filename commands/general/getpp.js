@@ -5,71 +5,70 @@ module.exports = {
   aliases: ['gp', 'getpic'],
   category: 'general',
   description: 'Get profile picture of a user',
-  usage: '.getpp (reply to message or tag user)',
+  usage: '.getpp (reply to message, tag user, or enter number)',
   
   async execute(sock, msg, args, extra) {
     try {
       let targetUser = null;
-      
-      // Check if it's a reply
+
+      // 1️⃣ Check if it's a reply
       const quotedMessage = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       if (quotedMessage) {
-        // Get the participant who sent the quoted message
         targetUser = msg.message.extendedTextMessage.contextInfo.participant;
-      } else {
-        // Check if user is tagged
+      }
+
+      // 2️⃣ Check if user is tagged
+      if (!targetUser) {
         const mentionedJid = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
         if (mentionedJid && mentionedJid.length > 0) {
           targetUser = mentionedJid[0];
-        } else {
-          // If no reply or tag, use the sender of current message
-          targetUser = extra.sender;
         }
       }
-      
+
+      // 3️⃣ Check if args provided (number input, may have spaces)
+      if (!targetUser && args[0]) {
+        let number = args.join('').replace(/\D/g, ''); // remove spaces & non-digits
+        if (!number.includes('@s.whatsapp.net')) {
+          number += '@s.whatsapp.net';
+        }
+        targetUser = number;
+      }
+
+      // 4️⃣ Default to sender if none
+      if (!targetUser) targetUser = extra.sender;
+
       if (!targetUser) {
-        return extra.reply('❌ Could not identify target user. Please reply to a message or tag a user.');
+        return extra.reply('❌ Could not identify target user. Reply, tag, or provide a number.');
       }
-      
+
+      // 5️⃣ Try to get profile picture
+      let ppUrl = '';
       try {
-        // Try to get the profile picture
-        const ppUrl = await sock.profilePictureUrl(targetUser, 'image');
-        
-        if (!ppUrl) {
-          return extra.reply('❌ Profile picture not found for this user.');
-        }
-        
-        // Download the profile picture
-        const response = await axios.get(ppUrl, { responseType: 'arraybuffer' });
-        const buffer = Buffer.from(response.data);
-        
-        // Send the profile picture
-        await sock.sendMessage(extra.from, { 
-          image: buffer,
-          caption: `👤 Profile picture of @${targetUser.split('@')[0]}`,
-          mentions: [targetUser]
-        }, { quoted: msg });
-        
-      } catch (profileError) {
-        // Handle different types of errors
-        if (profileError.message?.includes('item-not-found') || 
-            profileError.output?.statusCode === 404 || 
-            profileError.output?.statusCode === 500 ||
-            profileError.message?.includes('not found')) {
-          return extra.reply('❌ Profile picture not found for this user.');
-        } else if (profileError.output?.statusCode === 401 || 
-                   profileError.message?.includes('forbidden') || 
-                   profileError.message?.includes('unauthorized')) {
-          return extra.reply('❌ Profile picture not found. The user\'s profile picture is private or not available.');
-        } else {
-          // Don't show error in console for normal cases, just inform user
-          return extra.reply('❌ Profile picture not found for this user.');
-        }
+        ppUrl = await sock.profilePictureUrl(targetUser, 'image');
+      } catch {
+        ppUrl = 'https://i.ibb.co/2k7V8dM/default-avatar.png'; // fallback avatar
       }
-      
+
+      const response = await axios.get(ppUrl, { responseType: 'arraybuffer' });
+      const buffer = Buffer.from(response.data);
+
+      // 6️⃣ Send as forwarded
+      await sock.sendMessage(extra.from, {
+        image: buffer,
+        caption: `👤 Profile picture of @${targetUser.split('@')[0]}`,
+        mentions: [targetUser],
+        contextInfo: {
+          forwardingScore: 999,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363422524788798@newsletter',
+            newsletterName: '𝐛𝐥𝐚𝐜𝐤 𝐡𝐚𝐭 𝐛𝐨𝐭 𝐦𝐝'
+          }
+        }
+      }, { quoted: msg });
+
     } catch (error) {
-      // Don't show error in console, just inform user
-      extra.reply('❌ Profile picture not found for this user.');
+      return extra.reply('❌ Unable to fetch profile picture at this time.');
     }
   }
 };
