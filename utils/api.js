@@ -25,18 +25,25 @@ const APIs = {
     }
   },
   
-  // AI Chat - Shizo API
-  chatAI: async (text) => {
-    try {
-      const response = await api.get(`https://api.shizo.top/ai/gpt?apikey=shizo&query=${encodeURIComponent(text)}`);
-      if (response.data && response.data.msg) {
-        return { msg: response.data.msg };
-      }
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to get AI response');
+// AI Chat - Shizo API
+chatAI: async (text) => {
+  try {
+    if (!text) throw new Error('No text provided');
+    if (typeof text !== 'string') text = String(text);
+
+    const response = await api.get('https://api.malvin.gleeze.com/ai/gpt-5', {
+      params: { text }
+    });
+
+    if (response.data && response.data.msg) {
+      return { msg: response.data.msg };
     }
-  },
+
+    return response.data;
+  } catch (error) {
+    throw new Error('Failed to get AI response: ' + error.message);
+  }
+},
   
   // YouTube Download
   ytDownload: async (url, type = 'audio') => {
